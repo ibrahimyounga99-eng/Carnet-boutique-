@@ -1,0 +1,1124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carnet Boutique</title>
+<meta name="theme-color" content="#1d6b49">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: one phone-width column. Sticky header (debt total + tabs), list views below, bottom sheet for every form. */
+:root {
+  --bg: #f4f6f3;
+  --surface: #ffffff;
+  --fg: #1b2420;
+  --muted: #5b6861;
+  --line: #dce2dd;
+  --accent: #1d6b49;
+  --accent-fg: #ffffff;
+  --accent-soft: #e0efe6;
+  --debt: #b0402a;
+  --debt-soft: #f7e5e0;
+  --warn: #8f5a00;
+  --warn-soft: #f8ecd0;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1512; --surface: #171f1a; --fg: #e8eee9; --muted: #98a79f; --line: #27342c;
+    --accent: #4fbf8a; --accent-fg: #07140d; --accent-soft: #1a2f24;
+    --debt: #ee8a72; --debt-soft: #35201b; --warn: #e3a845; --warn-soft: #33290f;
+    color-scheme: dark;
+  }
+}
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 40px;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  background: var(--bg); z-index: 10;
+}
+.app, .auth { max-width: 560px; margin: 0 auto; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+
+/* Header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg); padding-block: 16px 0;
+}
+.brand { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.brand-name { font-family: var(--font-display); font-weight: 700; font-size: 18px; min-width: 0; overflow-wrap: anywhere; }
+.brand-right { text-align: right; font-size: 13px; color: var(--muted); }
+.date { text-transform: capitalize; white-space: nowrap; }
+.sum { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.sum-label { font-size: 13px; color: var(--muted); letter-spacing: .02em; }
+.sum-value { font-family: var(--font-display); font-weight: 700; font-size: 34px; line-height: 1.15; color: var(--debt); font-variant-numeric: tabular-nums; }
+.sum-sub { font-size: 14px; color: var(--muted); }
+.tabs { display: flex; margin-top: 12px; border-bottom: 1px solid var(--line); }
+.tab {
+  flex: 1; background: none; border: 0; padding: 12px 4px; font-weight: 500; color: var(--muted);
+  border-bottom: 3px solid transparent; margin-bottom: -1px;
+}
+.tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Content */
+main { padding-top: 16px; }
+.toolbar { margin-bottom: 12px; }
+.banner { background: var(--warn-soft); color: var(--fg); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 14px; }
+.banner.strong { background: var(--debt-soft); }
+.banner p { margin: 0 0 8px; }
+.banner p:last-child { margin-bottom: 0; }
+.field {
+  width: 100%; padding: 12px; background: var(--surface); color: var(--fg);
+  border: 1px solid var(--line); border-radius: 10px;
+}
+textarea.field { min-height: 90px; resize: vertical; }
+label { display: block; font-size: 14px; font-weight: 500; margin: 14px 0 6px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px 16px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--surface); font-weight: 600; text-decoration: none; color: var(--fg); min-height: 46px;
+}
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.btn.danger { background: var(--debt); color: var(--surface); border-color: var(--debt); }
+.btn.full { width: 100%; }
+.btn[disabled] { opacity: .6; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.btn-row > .btn { flex: 1 1 140px; }
+.link-danger { background: none; border: 0; color: var(--debt); font-weight: 500; padding: 14px 0; text-decoration: underline; }
+.icon-btn { background: none; border: 0; font-size: 28px; line-height: 1; padding: 4px 10px; color: var(--muted); }
+
+.row {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 0;
+  background: none; border: 0; border-bottom: 1px solid var(--line); text-align: left;
+}
+.row-main { flex: 1; min-width: 0; }
+.row-name { font-weight: 600; overflow-wrap: anywhere; }
+.row-sub { font-size: 13px; color: var(--muted); }
+.amt { font-family: var(--font-display); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.amt.debt { color: var(--debt); }
+.amt.ok { color: var(--accent); }
+.amt.zero { color: var(--muted); font-family: var(--font-body); font-weight: 500; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: var(--warn-soft); color: var(--warn); margin-left: 6px; vertical-align: 1px; }
+.empty { padding: 28px 8px; text-align: center; color: var(--muted); }
+
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-width: 0; }
+.tile.wide { grid-column: 1 / -1; background: var(--accent-soft); border-color: transparent; }
+.tile-label { font-size: 13px; color: var(--muted); }
+.tile-value { font-family: var(--font-display); font-weight: 700; font-size: 22px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.tile.wide .tile-value { font-size: 30px; }
+.section { margin-top: 26px; }
+.section h3 { font-family: var(--font-display); font-size: 16px; margin: 0 0 6px; }
+.section p { margin: 0 0 8px; }
+
+/* Sign-in screen */
+.auth { padding-top: calc(32px + env(safe-area-inset-top, 0px)); }
+.auth h1 { font-family: var(--font-display); font-size: 28px; margin: 0 0 6px; }
+.auth .modes { display: flex; gap: 8px; margin: 18px 0 4px; }
+.auth .modes .btn { flex: 1; }
+.phone-wrap { display: flex; align-items: stretch; gap: 8px; }
+.phone-prefix { display: flex; align-items: center; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--muted); font-weight: 600; }
+
+/* Sheet */
+.backdrop { position: fixed; inset: 0; z-index: 20; background: rgba(8, 14, 11, .55); display: flex; align-items: flex-end; justify-content: center; }
+.sheet {
+  width: 100%; max-width: 560px; max-height: 90%; overflow-y: auto; background: var(--bg);
+  border-radius: 16px 16px 0 0; border: 1px solid var(--line); border-bottom: 0;
+  padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.sheet h2 { font-family: var(--font-display); font-size: 20px; margin: 0; overflow-wrap: anywhere; }
+.sheet h3 { font-family: var(--font-display); font-size: 15px; margin: 22px 0 4px; }
+.sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.bal { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: var(--accent-soft); }
+.bal.debt { background: var(--debt-soft); }
+.bal strong { font-family: var(--font-display); font-size: 26px; font-variant-numeric: tabular-nums; }
+.bal.debt strong { color: var(--debt); }
+.remind { margin-top: 16px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 10px; }
+.msg { margin: 6px 0 0; overflow-wrap: anywhere; }
+.hist { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.hist .row-main { min-width: 0; }
+.hist-x { background: none; border: 0; color: var(--muted); font-size: 22px; padding: 4px 8px; line-height: 1; }
+.error { color: var(--debt); font-size: 14px; margin: 10px 0 0; }
+.hint { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; text-decoration: underline; }
+.seg { position: relative; display: flex; gap: 8px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { flex: 1; margin: 0; text-align: center; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-weight: 600; }
+.seg input:checked + label { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.toast {
+  position: fixed; z-index: 30; left: 50%; transform: translateX(-50%);
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  max-width: calc(100% - 32px); width: max-content;
+  display: flex; align-items: center; gap: 14px;
+  background: var(--fg); color: var(--bg); padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 500;
+}
+.toast button { background: none; border: 0; color: var(--bg); font-weight: 700; text-decoration: underline; padding: 0; }
+</style>
+</head>
+<body>
+
+<section class="auth" id="authScreen" hidden>
+  <h1>Carnet Boutique</h1>
+  <p class="muted">Notez les dettes de vos clients et suivez votre caisse. Vos données sont sauvegardées en ligne et restent disponibles même sans internet.</p>
+  <div class="modes">
+    <button type="button" class="btn primary" data-act="auth-mode" data-mode="login" id="mode-login">Se connecter</button>
+    <button type="button" class="btn" data-act="auth-mode" data-mode="signup" id="mode-signup">Créer un compte</button>
+  </div>
+  <form data-form="auth" autocomplete="on">
+    <label for="a-phone">Numéro de téléphone</label>
+    <div class="phone-wrap">
+      <span class="phone-prefix">+226</span>
+      <input class="field" id="a-phone" name="phone" type="tel" inputmode="tel" autocomplete="username" placeholder="70 12 34 56">
+    </div>
+    <label for="a-code">Code secret (6 caractères ou plus)</label>
+    <input class="field" id="a-code" name="code" type="password" autocomplete="current-password">
+    <div id="code2Wrap" hidden>
+      <label for="a-code2">Répétez le code secret</label>
+      <input class="field" id="a-code2" name="code2" type="password" autocomplete="new-password">
+      <p class="hint">Notez ce code en lieu sûr : il ne peut pas être récupéré par SMS.</p>
+    </div>
+    <p class="error" id="authError" hidden></p>
+    <div class="btn-row"><button class="btn primary" id="authBtn">Continuer</button></div>
+  </form>
+</section>
+
+<div class="app" id="appShell" hidden>
+  <header class="top">
+    <div class="brand">
+      <span class="brand-name" id="brandName">Carnet Boutique</span>
+      <div class="brand-right"><div class="date" id="today"></div><div id="syncState"></div></div>
+    </div>
+    <div class="sum">
+      <div class="sum-label">Total dû par vos clients</div>
+      <div class="sum-value" id="sumValue">0 FCFA</div>
+      <div class="sum-sub" id="sumSub"></div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" data-act="tab" data-tab="dettes" id="tab-dettes">Dettes</button>
+      <button class="tab" role="tab" data-act="tab" data-tab="caisse" id="tab-caisse">Caisse</button>
+      <button class="tab" role="tab" data-act="tab" data-tab="reglages" id="tab-reglages">Réglages</button>
+    </nav>
+  </header>
+  <main id="view" role="tabpanel"></main>
+</div>
+
+<div class="backdrop" id="backdrop" hidden>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var CFG = window.CARNET_CONFIG || {};
+  var cloud = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY);
+  var PREFIX = 'carnet-boutique-v2:';
+  var EPOCH = '1970-01-01T00:00:00Z';
+  var WRITE_ACTS = ['new-credit', 'pay', 'add-credit', 'new-cash', 'del-tx', 'del-client', 'del-cash'];
+
+  var state = null;
+  var meta = newMeta();
+  var tab = 'dettes';
+  var query = '';
+  var storageOk = true;
+  var undoFn = null;
+  var toastTimer = null;
+  var sb = null;
+  var session = null;
+  var userId = 'local';
+  var phone = '';
+  var readOnly = false;
+  var access = null;
+  var syncing = false;
+  var syncMsg = '';
+  var pendingRender = false;
+  var syncTimer = null;
+  var authMode = 'login';
+
+  function $(s) { return document.querySelector(s); }
+  function newId() { return Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function fmt(n) {
+    var r = Math.round(n);
+    return (r < 0 ? '−' : '') + String(Math.abs(r)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' FCFA';
+  }
+  function parseAmount(v) { return parseInt(String(v == null ? '' : v).replace(/\D/g, ''), 10) || 0; }
+  function nowIso() { return new Date().toISOString(); }
+  function daysAgoIso(d, h) { var t = new Date(); t.setDate(t.getDate() - d); t.setHours(h, 0, 0, 0); return t.toISOString(); }
+  function startOfDay(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); return x.getTime(); }
+  function daysSince(iso) { return Math.round((startOfDay(new Date()) - startOfDay(new Date(iso))) / 864e5); }
+  function isToday(iso) { return daysSince(iso) === 0; }
+  function ago(iso) {
+    var d = daysSince(iso);
+    if (d <= 0) return "aujourd'hui";
+    if (d === 1) return 'hier';
+    return 'il y a ' + d + ' jours';
+  }
+  function dayLabel(iso) { return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); }
+  function longDay(ms) { return new Date(ms).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); }
+  function timeLabel(iso) { return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); }
+  function todayStr() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function fmtPhone(p) {
+    var d = String(p || '').replace(/\D/g, '');
+    return d.length === 8 ? d.replace(/(\d{2})(?=\d)/g, '$1 ') : String(p || '');
+  }
+  function cleanPhone(p) {
+    var d = String(p || '').replace(/\D/g, '');
+    if (d.indexOf('00226') === 0) d = d.slice(5);
+    else if (d.length > 8 && d.indexOf('226') === 0) d = d.slice(3);
+    return d;
+  }
+  function sum(list) { return list.reduce(function (s, x) { return s + x.amount; }, 0); }
+  function canon(o) { return JSON.stringify(o, Object.keys(o).sort()); }
+  function newMeta() { return { known: {}, outbox: {}, lastPull: EPOCH, access: null }; }
+  function emptyState() { return { clients: [], tx: [], cash: [], shop: '' }; }
+
+  /* ---------- Data ---------- */
+  function cleanClient(c) {
+    if (!c || !c.id || typeof c.name !== 'string') return null;
+    return { id: String(c.id), name: c.name.slice(0, 80), phone: String(c.phone || '').slice(0, 20), example: !!c.example };
+  }
+  function cleanTx(t) {
+    if (!t || !t.clientId || (t.type !== 'credit' && t.type !== 'paiement') || !(+t.amount > 0) || !t.date) return null;
+    return { id: String(t.id || newId()), clientId: String(t.clientId), type: t.type, amount: Math.round(+t.amount), note: String(t.note || '').slice(0, 120), date: String(t.date), example: !!t.example };
+  }
+  function cleanCash(c) {
+    if (!c || (c.type !== 'vente' && c.type !== 'depense') || !(+c.amount > 0) || !c.date) return null;
+    return { id: String(c.id || newId()), type: c.type, amount: Math.round(+c.amount), note: String(c.note || '').slice(0, 120), date: String(c.date), example: !!c.example };
+  }
+  function normalizeState(o, dropOrphans) {
+    if (!o || typeof o !== 'object' || !Array.isArray(o.clients) || !Array.isArray(o.tx)) return null;
+    var clients = o.clients.map(cleanClient).filter(Boolean);
+    var tx = o.tx.map(cleanTx).filter(Boolean);
+    if (dropOrphans) {
+      var ids = {};
+      clients.forEach(function (c) { ids[c.id] = true; });
+      tx = tx.filter(function (t) { return ids[t.clientId]; });
+    }
+    var cash = (Array.isArray(o.cash) ? o.cash : []).map(cleanCash).filter(Boolean);
+    return { clients: clients, tx: tx, cash: cash, shop: String(o.shop || '').slice(0, 60) };
+  }
+  function seed() {
+    var clients = [
+      { id: 'ex1', name: 'Awa Ouédraogo', phone: '70000001', example: true },
+      { id: 'ex2', name: 'Moussa Sawadogo', phone: '70000002', example: true },
+      { id: 'ex3', name: 'Fatimata Traoré', phone: '70000003', example: true },
+      { id: 'ex4', name: 'Issouf Compaoré', phone: '70000004', example: true }
+    ];
+    function t(cid, type, amount, note, d, h) { return { id: newId(), clientId: cid, type: type, amount: amount, note: note, date: daysAgoIso(d, h || 10), example: true }; }
+    var tx = [
+      t('ex1', 'credit', 15000, 'Sacs de riz', 40), t('ex1', 'paiement', 5000, '', 18),
+      t('ex2', 'credit', 8500, 'Huile et sucre', 3),
+      t('ex3', 'credit', 22000, 'Ciment', 20), t('ex3', 'paiement', 12000, '', 9), t('ex3', 'credit', 4000, 'Clous', 2),
+      t('ex4', 'credit', 6000, 'Savon et lait', 30), t('ex4', 'paiement', 6000, '', 14)
+    ];
+    var cash = [
+      { id: newId(), type: 'vente', amount: 12500, note: 'Ventes du matin', date: daysAgoIso(0, 7), example: true },
+      { id: newId(), type: 'depense', amount: 3000, note: 'Transport', date: daysAgoIso(0, 8), example: true },
+      { id: newId(), type: 'vente', amount: 7500, note: 'Ventes de la matinée', date: daysAgoIso(0, 9), example: true }
+    ];
+    return { clients: clients, tx: tx, cash: cash, shop: '' };
+  }
+  function stKey() { return PREFIX + userId; }
+  function metaKey() { return PREFIX + userId + ':meta'; }
+  function lastKey() { return PREFIX + 'last-user'; }
+  function saveMeta() { try { localStorage.setItem(metaKey(), JSON.stringify(meta)); } catch (e) { /* ignore */ } }
+  function persistState() {
+    try { localStorage.setItem(stKey(), JSON.stringify(state)); storageOk = true; } catch (e) { storageOk = false; }
+  }
+  function loadAll(seedIfEmpty) {
+    var raw = null;
+    try { raw = localStorage.getItem(stKey()); } catch (e) { raw = null; }
+    meta = newMeta();
+    try {
+      var m = JSON.parse(localStorage.getItem(metaKey()) || 'null');
+      if (m && m.known && m.outbox) { meta = m; if (!meta.lastPull) meta.lastPull = EPOCH; }
+    } catch (e) { meta = newMeta(); }
+    state = null;
+    if (raw) { try { state = normalizeState(JSON.parse(raw), false); } catch (e) { state = null; } }
+    if (!state) {
+      state = seedIfEmpty ? seed() : emptyState();
+      persistState();
+    }
+  }
+  function client(id) { return state.clients.filter(function (c) { return c.id === id; })[0]; }
+  function clientName(id) { var c = client(id); return c ? c.name : 'Client'; }
+  function balance(id) {
+    return state.tx.reduce(function (s, t) {
+      if (t.clientId !== id) return s;
+      return s + (t.type === 'credit' ? t.amount : -t.amount);
+    }, 0);
+  }
+  function lastDate(id) {
+    var d = '';
+    state.tx.forEach(function (t) { if (t.clientId === id && t.date > d) d = t.date; });
+    return d;
+  }
+  function hasExamples() {
+    return state.clients.some(function (c) { return c.example; }) || state.cash.some(function (c) { return c.example; });
+  }
+  function adoptClient(id) {
+    var c = client(id);
+    if (c && c.example) {
+      c.example = false;
+      state.tx.forEach(function (t) { if (t.clientId === id) t.example = false; });
+    }
+  }
+  function snapshot() { return JSON.stringify(state); }
+  function restoreSnapshot(s) { state = JSON.parse(s); save(); render(); }
+
+  /* ---------- Sync bookkeeping ---------- */
+  function flatten(st) {
+    var m = {};
+    st.clients.forEach(function (c) { if (!c.example) m['c:' + c.id] = c; });
+    st.tx.forEach(function (t) { if (!t.example) m['t:' + t.id] = t; });
+    st.cash.forEach(function (c) { if (!c.example) m['k:' + c.id] = c; });
+    if (st.shop || ('s:shop' in meta.known)) m['s:shop'] = { id: 'shop', shop: st.shop };
+    return m;
+  }
+  function track() {
+    var flat = flatten(state), now = Date.now(), key;
+    for (key in flat) {
+      var j = canon(flat[key]);
+      if (meta.known[key] !== j) { meta.outbox[key] = { op: 'up', data: flat[key], u: now }; meta.known[key] = j; }
+    }
+    for (key in meta.known) {
+      if (!(key in flat)) { meta.outbox[key] = { op: 'del', u: now }; delete meta.known[key]; }
+    }
+  }
+  function save() {
+    persistState();
+    if (cloud) { track(); saveMeta(); scheduleSync(); }
+  }
+  function applyRemote(rows) {
+    var changed = false;
+    rows.forEach(function (r) {
+      var key = r.id, p = meta.outbox[key];
+      if (p && p.u > r.updated_at) return;
+      if (p) delete meta.outbox[key];
+      var kind = key.charAt(0), id = key.slice(2);
+      if (kind === 's') {
+        if (!r.deleted && r.data) {
+          state.shop = String(r.data.shop || '').slice(0, 60);
+          meta.known[key] = canon({ id: 'shop', shop: state.shop });
+          changed = true;
+        }
+        return;
+      }
+      var list = kind === 'c' ? state.clients : kind === 't' ? state.tx : kind === 'k' ? state.cash : null;
+      if (!list) return;
+      var idx = -1;
+      for (var i = 0; i < list.length; i++) { if (list[i].id === id) { idx = i; break; } }
+      if (r.deleted) {
+        if (idx >= 0) { list.splice(idx, 1); changed = true; }
+        delete meta.known[key];
+        return;
+      }
+      var rec = kind === 'c' ? cleanClient(r.data) : kind === 't' ? cleanTx(r.data) : cleanCash(r.data);
+      if (!rec) return;
+      rec.id = id;
+      rec.example = false;
+      if (idx >= 0) list[idx] = rec; else list.push(rec);
+      meta.known[key] = canon(rec);
+      changed = true;
+    });
+    return changed;
+  }
+
+  /* ---------- Access (essai / abonnement) ---------- */
+  function computeAccess() {
+    var a = meta.access;
+    if (!cloud || !a || !a.created) { access = null; readOnly = false; return; }
+    var trialEnd = new Date(a.created).getTime() + (CFG.TRIAL_DAYS || 14) * 864e5;
+    var paid = a.paidUntil ? new Date(a.paidUntil).getTime() : 0;
+    var until = Math.max(trialEnd, paid);
+    access = { until: until, paid: paid > trialEnd, left: Math.ceil((until - Date.now()) / 864e5) };
+    readOnly = until < Date.now();
+  }
+  function refreshAccess() {
+    if (!sb || !session) return Promise.resolve();
+    return sb.from('subscriptions').select('paid_until').maybeSingle().then(function (r) {
+      if (!r.error) meta.access = { paidUntil: r.data ? r.data.paid_until : null, created: session.user.created_at };
+      computeAccess();
+    }, function () { computeAccess(); });
+  }
+  function accessNote(full) {
+    if (!cloud || !access) return '';
+    if (readOnly) {
+      var pay = CFG.PAY_NUMBER ? ('<p>Pour continuer, envoyez ' + esc(fmt(CFG.PRICE_FCFA || 2500)) + ' par Mobile Money au <strong>' + esc(CFG.PAY_NUMBER) + '</strong> en indiquant votre numéro ' + esc(fmtPhone(phone)) + '. Votre compte est réactivé sous 24 h.</p>' +
+        '<button class="link-btn" data-act="copy-msg" data-text="' + esc(CFG.PAY_NUMBER) + '">Copier le numéro</button>') : '<p>Contactez le vendeur de l’application pour renouveler.</p>';
+      return '<div class="banner strong"><p><strong>Votre abonnement est terminé.</strong> Vous pouvez consulter vos données, mais plus en ajouter.</p>' + pay + '</div>';
+    }
+    if (full) {
+      return '<p class="hint" style="margin-top:0">' + (access.paid ? 'Abonnement actif jusqu’au ' : 'Essai gratuit jusqu’au ') + esc(longDay(access.until)) + '.</p>';
+    }
+    if (!access.paid && access.left <= 3) {
+      return '<div class="banner"><p>Il reste ' + access.left + (access.left > 1 ? ' jours' : ' jour') + ' d’essai gratuit.' +
+        (CFG.PAY_NUMBER ? ' Pour continuer, envoyez ' + esc(fmt(CFG.PRICE_FCFA || 2500)) + ' par Mobile Money au ' + esc(CFG.PAY_NUMBER) + ' (indiquez ' + esc(fmtPhone(phone)) + ').' : '') + '</p></div>';
+    }
+    return '';
+  }
+
+  /* ---------- Sync ---------- */
+  function setSync(msg) {
+    syncMsg = msg;
+    var el = $('#syncState');
+    if (el) el.textContent = cloud ? msg : '';
+  }
+  function scheduleSync() {
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(function () { sync(); }, 700);
+  }
+  function pendingCount() { return Object.keys(meta.outbox).length; }
+  function sync() {
+    if (!cloud || !sb || syncing || userId === 'local' || $('#appShell').hidden) return Promise.resolve();
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      setSync(pendingCount() ? 'Hors ligne · ' + pendingCount() + ' à envoyer' : 'Hors ligne');
+      return Promise.resolve();
+    }
+    syncing = true;
+    setSync('Synchronisation…');
+    var changed = false;
+    return Promise.resolve().then(function () {
+      if (session) return session;
+      return sb.auth.getSession().then(function (r) { session = r.data.session; return session; });
+    }).then(function (s) {
+      if (!s) { var e = new Error('no session'); e.noSession = true; throw e; }
+      var keys = Object.keys(meta.outbox);
+      var chain = Promise.resolve();
+      for (var i = 0; i < keys.length; i += 200) {
+        (function (slice) {
+          chain = chain.then(function () {
+            var chunk = slice.map(function (k) {
+              var o = meta.outbox[k];
+              return { user_id: userId, id: k, kind: k.charAt(0), data: o.op === 'up' ? o.data : null, updated_at: o.u, deleted: o.op === 'del' };
+            });
+            return sb.from('records').upsert(chunk, { onConflict: 'user_id,id' }).then(function (res) {
+              if (res.error) throw res.error;
+              chunk.forEach(function (row) {
+                var cur = meta.outbox[row.id];
+                if (cur && cur.u === row.updated_at) delete meta.outbox[row.id];
+              });
+              saveMeta();
+            });
+          });
+        })(keys.slice(i, i + 200));
+      }
+      return chain;
+    }).then(function () {
+      function page() {
+        return sb.from('records').select('id,data,updated_at,deleted,synced_at').gt('synced_at', meta.lastPull)
+          .order('synced_at', { ascending: true }).limit(1000).then(function (q) {
+            if (q.error) throw q.error;
+            var rows = q.data || [];
+            if (rows.length) {
+              if (applyRemote(rows)) changed = true;
+              meta.lastPull = rows[rows.length - 1].synced_at;
+            }
+            return rows.length === 1000 ? page() : null;
+          });
+      }
+      return page();
+    }).then(function () {
+      return refreshAccess();
+    }).then(function () {
+      persistState(); saveMeta();
+      setSync(pendingCount() ? pendingCount() + ' modification(s) à envoyer' : 'Synchronisé à ' + timeLabel(nowIso()));
+      if (changed) { if (sheetOpen()) pendingRender = true; else render(); } else if (!sheetOpen()) renderTop();
+    }).catch(function (e) {
+      var msg = String((e && e.message) || '');
+      if (e && e.noSession) { setSync('Reconnexion nécessaire'); showAuth('Reconnectez-vous pour envoyer vos données. Elles restent sur ce téléphone.'); }
+      else if (e && (e.code === '42501' || /row-level security/i.test(msg))) { setSync('Abonnement terminé · données non envoyées'); refreshAccess().then(function () { if (!sheetOpen()) render(); }); }
+      else if (e && (e.status === 401 || /JWT/i.test(msg))) { session = null; setSync('Reconnexion nécessaire'); showAuth('Votre session a expiré. Reconnectez-vous.'); }
+      else setSync('Erreur de synchronisation, nouvel essai plus tard');
+    }).then(function () { syncing = false; });
+  }
+
+  /* ---------- Toast ---------- */
+  function toast(msg, undo) {
+    var el = $('#toast');
+    undoFn = undo || null;
+    el.innerHTML = '<span>' + esc(msg) + '</span>' + (undo ? '<button data-act="undo">Annuler</button>' : '');
+    el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.hidden = true; undoFn = null; }, undo ? 7000 : 3000);
+  }
+
+  /* ---------- Sheet ---------- */
+  function openSheet(html) {
+    var sh = $('#sheet');
+    sh.innerHTML = html;
+    $('#backdrop').hidden = false;
+    var first = sh.querySelector('input.field, textarea.field');
+    if (first) first.focus(); else sh.focus();
+  }
+  function closeSheet() {
+    $('#backdrop').hidden = true; $('#sheet').innerHTML = '';
+    if (pendingRender) { pendingRender = false; render(); }
+  }
+  function sheetOpen() { return !$('#backdrop').hidden; }
+
+  function sheetNewCredit() {
+    openSheet(
+      '<div class="sheet-head"><h2>Nouveau crédit</h2><button class="icon-btn" data-act="close" aria-label="Fermer">×</button></div>' +
+      '<form data-form="new-credit" autocomplete="off">' +
+      '<label for="f-name">Nom du client</label>' +
+      '<input class="field" id="f-name" name="name" list="client-names" required maxlength="80">' +
+      '<datalist id="client-names">' + state.clients.map(function (c) { return '<option value="' + esc(c.name) + '">'; }).join('') + '</datalist>' +
+      '<label for="f-phone">Téléphone (facultatif)</label>' +
+      '<input class="field" id="f-phone" name="phone" type="tel" inputmode="tel" placeholder="70 12 34 56">' +
+      '<label for="f-amount">Montant (FCFA)</label>' +
+      '<input class="field" id="f-amount" name="amount" inputmode="numeric" placeholder="5000" required>' +
+      '<label for="f-note">Pour quoi ? (facultatif)</label>' +
+      '<input class="field" id="f-note" name="note" placeholder="Riz, huile, ciment…" maxlength="120">' +
+      '<p class="error" hidden></p>' +
+      '<div class="btn-row"><button type="button" class="btn" data-act="close">Annuler</button><button class="btn primary">Enregistrer</button></div>' +
+      '</form>'
+    );
+  }
+  function sheetAmount(kind, id) {
+    var c = client(id);
+    if (!c) return closeSheet();
+    var b = balance(id);
+    var isPay = kind === 'pay';
+    openSheet(
+      '<div class="sheet-head"><div><h2>' + (isPay ? 'Paiement reçu' : 'Nouveau crédit') + '</h2><div class="muted">' + esc(c.name) + (b > 0 ? ' · doit ' + esc(fmt(b)) : '') + '</div></div>' +
+      '<button class="icon-btn" data-act="close" aria-label="Fermer">×</button></div>' +
+      '<form data-form="' + (isPay ? 'payment' : 'credit') + '" data-id="' + esc(id) + '" autocomplete="off">' +
+      '<label for="f-amount">Montant (FCFA)</label>' +
+      '<input class="field" id="f-amount" name="amount" inputmode="numeric" required placeholder="5000">' +
+      (isPay && b > 0 ? '<div class="hint"><button type="button" class="link-btn" data-act="fill-all" data-amount="' + b + '">Il paie tout (' + esc(fmt(b)) + ')</button></div>' : '') +
+      '<label for="f-note">Note (facultatif)</label>' +
+      '<input class="field" id="f-note" name="note" maxlength="120" placeholder="' + (isPay ? 'Espèces, Mobile Money…' : 'Riz, huile, ciment…') + '">' +
+      '<p class="error" hidden></p>' +
+      '<div class="btn-row"><button type="button" class="btn" data-act="open-client" data-id="' + esc(id) + '">Retour</button><button class="btn primary">Enregistrer</button></div>' +
+      '</form>'
+    );
+  }
+  function sheetCash() {
+    openSheet(
+      '<div class="sheet-head"><h2>Vente ou dépense</h2><button class="icon-btn" data-act="close" aria-label="Fermer">×</button></div>' +
+      '<form data-form="cash" autocomplete="off">' +
+      '<label>Type</label>' +
+      '<div class="seg"><input type="radio" id="t-vente" name="type" value="vente" checked><label for="t-vente">Vente</label>' +
+      '<input type="radio" id="t-depense" name="type" value="depense"><label for="t-depense">Dépense</label></div>' +
+      '<label for="f-amount">Montant (FCFA)</label>' +
+      '<input class="field" id="f-amount" name="amount" inputmode="numeric" required placeholder="2500">' +
+      '<label for="f-note">Note (facultatif)</label>' +
+      '<input class="field" id="f-note" name="note" maxlength="120" placeholder="Ventes du matin, transport…">' +
+      '<p class="error" hidden></p>' +
+      '<div class="btn-row"><button type="button" class="btn" data-act="close">Annuler</button><button class="btn primary">Enregistrer</button></div>' +
+      '</form>'
+    );
+  }
+  function reminder(c, b) {
+    var first = c.name.split(' ')[0];
+    return 'Bonjour ' + first + ", c'est " + (state.shop || 'la boutique') + '. Il vous reste ' + fmt(b) + ' à régler. Merci de passer quand vous pouvez.';
+  }
+  function waLink(p, msg) {
+    var d = cleanPhone(p);
+    if (!d) return null;
+    if (d.length === 8) d = '226' + d;
+    return 'https://wa.me/' + d + '?text=' + encodeURIComponent(msg);
+  }
+  function sheetClient(id) {
+    var c = client(id);
+    if (!c) return closeSheet();
+    var b = balance(id);
+    var hist = state.tx.filter(function (t) { return t.clientId === id; }).sort(function (a, z) { return z.date.localeCompare(a.date); });
+    var msg = reminder(c, b);
+    var link = b > 0 ? waLink(c.phone, msg) : null;
+    var html =
+      '<div class="sheet-head"><div><h2>' + esc(c.name) + '</h2><div class="muted">' + (c.phone ? esc(fmtPhone(c.phone)) : 'Pas de numéro enregistré') + '</div></div>' +
+      '<button class="icon-btn" data-act="close" aria-label="Fermer">×</button></div>' +
+      '<div class="bal ' + (b > 0 ? 'debt' : '') + '"><span>' + (b > 0 ? 'Il doit' : 'Situation') + '</span><strong>' + (b > 0 ? esc(fmt(b)) : 'Soldé') + '</strong></div>' +
+      '<div class="btn-row"><button class="btn primary" data-act="pay" data-id="' + esc(id) + '">Paiement reçu</button>' +
+      '<button class="btn" data-act="add-credit" data-id="' + esc(id) + '">Nouveau crédit</button></div>';
+    if (b > 0) {
+      html += '<div class="remind"><div class="muted small">Rappel prêt à envoyer</div><p class="msg">' + esc(msg) + '</p><div class="btn-row">' +
+        (link ? '<a class="btn" href="' + esc(link) + '" target="_blank" rel="noopener">Envoyer sur WhatsApp</a>' : '') +
+        '<button class="btn" data-act="copy-msg" data-text="' + esc(msg) + '">Copier le message</button></div>' +
+        (link ? '' : '<div class="hint">Ajoutez un numéro de téléphone pour envoyer le rappel sur WhatsApp.</div>') + '</div>';
+    }
+    if (!c.phone) {
+      html += '<form data-form="phone" data-id="' + esc(id) + '" autocomplete="off"><label for="f-phone">Ajouter son numéro</label>' +
+        '<div style="display:flex;gap:8px"><input class="field" id="f-phone" name="phone" type="tel" inputmode="tel" placeholder="70 12 34 56"><button class="btn">Ajouter</button></div><p class="error" hidden></p></form>';
+    }
+    html += '<h3>Historique</h3>';
+    if (!hist.length) html += '<div class="muted">Aucun mouvement.</div>';
+    hist.forEach(function (t) {
+      var credit = t.type === 'credit';
+      html += '<div class="hist"><div class="row-main"><div class="row-name">' + (credit ? 'Crédit' : 'Paiement') + '</div>' +
+        '<div class="row-sub">' + esc(dayLabel(t.date)) + (t.note ? ' · ' + esc(t.note) : '') + '</div></div>' +
+        '<div class="amt ' + (credit ? 'debt' : 'ok') + '">' + (credit ? '+' : '−') + esc(fmt(t.amount)) + '</div>' +
+        '<button class="hist-x" data-act="del-tx" data-id="' + esc(t.id) + '" aria-label="Supprimer ce mouvement">×</button></div>';
+    });
+    html += '<button class="link-danger" data-act="del-client" data-id="' + esc(id) + '">Supprimer ce client</button>';
+    openSheet(html);
+  }
+  function sheetResetConfirm() {
+    openSheet(
+      '<div class="sheet-head"><h2>Tout effacer ?</h2><button class="icon-btn" data-act="close" aria-label="Fermer">×</button></div>' +
+      '<p>Tous vos clients, dettes et mouvements de caisse seront supprimés' + (cloud ? ' ici et sur vos autres appareils' : ' de cet appareil') + '. Vous pourrez annuler pendant quelques secondes.</p>' +
+      '<div class="btn-row"><button class="btn" data-act="close">Garder mes données</button><button class="btn danger" data-act="reset-do">Oui, tout effacer</button></div>'
+    );
+  }
+  function sheetLogoutConfirm() {
+    openSheet(
+      '<div class="sheet-head"><h2>Se déconnecter ?</h2><button class="icon-btn" data-act="close" aria-label="Fermer">×</button></div>' +
+      '<p>' + pendingCount() + ' modification(s) ne sont pas encore envoyées. Si vous vous déconnectez maintenant, elles seront perdues. Reconnectez-vous à internet et touchez « Synchroniser maintenant » avant.</p>' +
+      '<div class="btn-row"><button class="btn primary" data-act="close">Annuler</button><button class="btn danger" data-act="logout-do">Me déconnecter quand même</button></div>'
+    );
+  }
+
+  /* ---------- Views ---------- */
+  function bannerExamples() {
+    if (!hasExamples()) return '';
+    return '<div class="banner"><p>Ces clients et ces ventes sont des exemples pour vous montrer l’outil. Supprimez-les avant de noter vos vraies dettes.</p>' +
+      '<button class="link-btn" data-act="clear-examples">Supprimer les exemples</button></div>';
+  }
+  function viewDettes() {
+    return accessNote(false) + bannerExamples() +
+      '<div class="toolbar"><button class="btn primary full" data-act="new-credit">+ Nouveau crédit</button></div>' +
+      '<label for="search" class="muted small" style="margin-top:0">Chercher un client</label>' +
+      '<input class="field" id="search" type="search" placeholder="Nom ou téléphone" value="' + esc(query) + '">' +
+      '<div id="list"></div>';
+  }
+  function renderList() {
+    var el = $('#list');
+    if (!el) return;
+    var q = query.trim().toLowerCase();
+    var rows = state.clients.map(function (c) { return { c: c, b: balance(c.id), last: lastDate(c.id) }; }).filter(function (x) {
+      return !q || x.c.name.toLowerCase().indexOf(q) >= 0 || (x.c.phone || '').indexOf(q.replace(/\s/g, '')) >= 0;
+    });
+    rows.sort(function (a, z) {
+      return ((z.b > 0) - (a.b > 0)) || (z.b - a.b) || a.c.name.localeCompare(z.c.name, 'fr');
+    });
+    if (!rows.length) {
+      el.innerHTML = '<div class="empty">' + (state.clients.length ? 'Aucun client ne correspond à cette recherche.' : 'Aucun client pour l’instant. Touchez « Nouveau crédit » pour noter votre première dette.') + '</div>';
+      return;
+    }
+    el.innerHTML = rows.map(function (x) {
+      var late = x.b > 0 && x.last && daysSince(x.last) >= 14;
+      return '<button class="row" data-act="open-client" data-id="' + esc(x.c.id) + '">' +
+        '<div class="row-main"><div class="row-name">' + esc(x.c.name) + (late ? '<span class="pill">À relancer</span>' : '') + '</div>' +
+        '<div class="row-sub">' + (x.c.phone ? esc(fmtPhone(x.c.phone)) + ' · ' : '') + (x.last ? 'dernier mouvement ' + esc(ago(x.last)) : 'aucun mouvement') + '</div></div>' +
+        (x.b > 0 ? '<div class="amt debt">' + esc(fmt(x.b)) + '</div>' : '<div class="amt zero">Soldé</div>') + '</button>';
+    }).join('');
+  }
+  function viewCaisse() {
+    var cashT = state.cash.filter(function (c) { return isToday(c.date); });
+    var pay = state.tx.filter(function (t) { return t.type === 'paiement' && isToday(t.date); });
+    var cred = state.tx.filter(function (t) { return t.type === 'credit' && isToday(t.date); });
+    var sales = sum(cashT.filter(function (c) { return c.type === 'vente'; }));
+    var exp = sum(cashT.filter(function (c) { return c.type === 'depense'; }));
+    var rec = sum(pay);
+    var cr = sum(cred);
+    var solde = sales + rec - exp;
+    var items = cashT.map(function (c) {
+      return { kind: 'cash', id: c.id, label: c.type === 'vente' ? 'Vente' : 'Dépense', note: c.note, amount: c.amount, sign: c.type === 'vente' ? 1 : -1, date: c.date };
+    }).concat(pay.map(function (t) {
+      return { kind: 'pay', id: t.id, label: 'Dette encaissée', note: clientName(t.clientId) + (t.note ? ' · ' + t.note : ''), amount: t.amount, sign: 1, date: t.date };
+    })).sort(function (a, z) { return z.date.localeCompare(a.date); });
+
+    var html = accessNote(false) + bannerExamples() +
+      '<div class="tiles">' +
+      '<div class="tile wide"><div class="tile-label">Solde de la journée</div><div class="tile-value">' + esc(fmt(solde)) + '</div></div>' +
+      '<div class="tile"><div class="tile-label">Ventes</div><div class="tile-value">' + esc(fmt(sales)) + '</div></div>' +
+      '<div class="tile"><div class="tile-label">Dettes encaissées</div><div class="tile-value">' + esc(fmt(rec)) + '</div></div>' +
+      '<div class="tile"><div class="tile-label">Dépenses</div><div class="tile-value">' + esc(fmt(exp)) + '</div></div>' +
+      '<div class="tile"><div class="tile-label">Crédits accordés</div><div class="tile-value">' + esc(fmt(cr)) + '</div></div>' +
+      '</div>' +
+      '<button class="btn primary full" data-act="new-cash">+ Vente ou dépense</button>' +
+      '<div class="section"><h3>Aujourd’hui</h3>';
+    if (!items.length) html += '<div class="empty">Rien d’enregistré aujourd’hui.</div>';
+    items.forEach(function (it) {
+      html += '<div class="hist"><div class="row-main"><div class="row-name">' + esc(it.label) + '</div>' +
+        '<div class="row-sub">' + esc(timeLabel(it.date)) + (it.note ? ' · ' + esc(it.note) : '') + '</div></div>' +
+        '<div class="amt ' + (it.sign > 0 ? 'ok' : 'debt') + '">' + (it.sign > 0 ? '+' : '−') + esc(fmt(it.amount)) + '</div>' +
+        (it.kind === 'cash' ? '<button class="hist-x" data-act="del-cash" data-id="' + esc(it.id) + '" aria-label="Supprimer">×</button>' : '<span style="width:36px"></span>') + '</div>';
+    });
+    html += '</div><p class="hint">Le solde compte les ventes et les dettes encaissées, moins les dépenses. Les crédits accordés ne sont pas de l’argent reçu.</p>';
+    return html;
+  }
+  function viewReglages() {
+    var html = accessNote(false);
+    if (!storageOk) {
+      html += '<div class="banner"><p>Cet appareil ne permet pas d’enregistrer vos données. Faites une sauvegarde avant de quitter la page.</p></div>';
+    }
+    html += bannerExamples();
+    if (cloud) {
+      html += '<div class="section" style="margin-top:0"><h3>Compte</h3>' +
+        '<p>Connecté avec le numéro <strong>' + esc(fmtPhone(phone)) + '</strong>.</p>' + accessNote(true) +
+        '<p class="hint" style="margin-top:0">' + esc(syncMsg || '') + '</p>' +
+        '<div class="btn-row"><button class="btn" data-act="sync-now">Synchroniser maintenant</button><button class="btn" data-act="logout-ask">Se déconnecter</button></div></div>';
+    }
+    html += '<div class="section"' + (cloud ? '' : ' style="margin-top:0"') + '><h3>Nom de la boutique</h3>' +
+      '<p class="hint" style="margin-top:0">Il s’affiche en haut de l’écran et dans les rappels envoyés à vos clients.</p>' +
+      '<label for="shopName" class="muted small" style="margin-top:0">Nom</label>' +
+      '<input class="field" id="shopName" maxlength="60" placeholder="Boutique Wend-Kuuni" value="' + esc(state.shop) + '"></div>' +
+      '<div class="section"><h3>Sauvegarde</h3>' +
+      '<p>' + (cloud ? 'Vos données sont aussi enregistrées en ligne. Une sauvegarde sur fichier reste utile en cas de problème.' : 'Vos données sont enregistrées sur ce téléphone, dans ce navigateur. Si vous changez de téléphone ou effacez les données du navigateur, elles disparaissent. Faites une sauvegarde chaque semaine.') + '</p>' +
+      '<div class="btn-row"><button class="btn primary" data-act="export-dl">Télécharger la sauvegarde</button>' +
+      '<button class="btn" data-act="export-copy">Copier la sauvegarde</button></div>' +
+      '<form data-form="paste-restore" autocomplete="off"><label for="pasteBox">Restaurer une sauvegarde</label>' +
+      '<input class="field" id="importFile" type="file" accept=".json,application/json" aria-label="Choisir un fichier de sauvegarde">' +
+      '<p class="hint">Ou collez ici le texte copié :</p>' +
+      '<textarea class="field" id="pasteBox" name="data" placeholder="Collez la sauvegarde ici"></textarea>' +
+      '<p class="error" hidden></p>' +
+      '<div class="btn-row"><button class="btn">Restaurer</button></div></form></div>' +
+      '<div class="section"><h3>Données</h3>' +
+      (hasExamples() ? '<div class="btn-row" style="margin-top:0"><button class="btn" data-act="clear-examples">Supprimer les exemples</button></div>' : '') +
+      '<button class="link-danger" data-act="reset-ask">Tout effacer</button></div>';
+    return html;
+  }
+  function renderTop() {
+    var total = state.clients.reduce(function (s, c) { return s + Math.max(0, balance(c.id)); }, 0);
+    var n = state.clients.filter(function (c) { return balance(c.id) > 0; }).length;
+    $('#sumValue').textContent = fmt(total);
+    $('#sumSub').textContent = n === 0 ? 'Aucun client ne vous doit d’argent' : (n === 1 ? '1 client vous doit de l’argent' : n + ' clients vous doivent de l’argent');
+    $('#brandName').textContent = state.shop || 'Carnet Boutique';
+    $('#today').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    $('#syncState').textContent = cloud ? syncMsg : '';
+    ['dettes', 'caisse', 'reglages'].forEach(function (t) { $('#tab-' + t).setAttribute('aria-selected', t === tab ? 'true' : 'false'); });
+  }
+  function renderView() {
+    var v = $('#view');
+    v.innerHTML = tab === 'dettes' ? viewDettes() : tab === 'caisse' ? viewCaisse() : viewReglages();
+    if (tab === 'dettes') renderList();
+  }
+  function render() { renderTop(); renderView(); }
+
+  /* ---------- Auth ---------- */
+  function setAuthMode(m) {
+    authMode = m;
+    $('#mode-login').className = 'btn' + (m === 'login' ? ' primary' : '');
+    $('#mode-signup').className = 'btn' + (m === 'signup' ? ' primary' : '');
+    $('#code2Wrap').hidden = m !== 'signup';
+    $('#a-code').setAttribute('autocomplete', m === 'signup' ? 'new-password' : 'current-password');
+  }
+  function showAuth(msg) {
+    $('#appShell').hidden = true;
+    $('#backdrop').hidden = true;
+    $('#authScreen').hidden = false;
+    setAuthMode(authMode);
+    var e = $('#authError');
+    if (msg) { e.textContent = msg; e.hidden = false; } else { e.hidden = true; }
+  }
+  function showApp() { $('#authScreen').hidden = true; $('#appShell').hidden = false; }
+  function phoneFromEmail(email) {
+    var m = /^p226(\d{8})@/.exec(String(email || ''));
+    return m ? m[1] : '';
+  }
+  function enter(sess, isNewAccount) {
+    session = sess;
+    userId = sess.user.id;
+    phone = phoneFromEmail(sess.user.email);
+    try { localStorage.setItem(lastKey(), JSON.stringify({ uid: userId, phone: phone })); } catch (e) { /* ignore */ }
+    loadAll(!!isNewAccount);
+    if (!meta.access || !meta.access.created) meta.access = { paidUntil: null, created: sess.user.created_at };
+    computeAccess();
+    showApp();
+    tab = 'dettes';
+    render();
+    return sync();
+  }
+  function enterOffline(last) {
+    userId = last.uid;
+    phone = last.phone || '';
+    loadAll(false);
+    computeAccess();
+    showApp();
+    render();
+    setSync('Hors ligne');
+  }
+  function doAuth(form, fd, fail) {
+    var ph = cleanPhone(fd.get('phone'));
+    var code = String(fd.get('code') || '');
+    if (ph.length !== 8) return fail('Le numéro doit avoir 8 chiffres (exemple : 70 12 34 56).');
+    if (code.length < 6) return fail('Le code secret doit avoir au moins 6 caractères.');
+    if (authMode === 'signup' && code !== String(fd.get('code2') || '')) return fail('Les deux codes ne sont pas identiques.');
+    if (!sb) return fail('Le service est injoignable. Vérifiez internet puis rechargez la page.');
+    var btn = $('#authBtn');
+    btn.disabled = true;
+    var email = 'p226' + ph + '@carnet-boutique.app';
+    var call = authMode === 'signup' ? sb.auth.signUp({ email: email, password: code }) : sb.auth.signInWithPassword({ email: email, password: code });
+    return call.then(function (res) {
+      if (res.error) {
+        var m = String(res.error.message || '');
+        if (/invalid login/i.test(m)) return fail('Numéro ou code incorrect.');
+        if (/already registered/i.test(m)) return fail('Ce numéro a déjà un compte. Choisissez « Se connecter ».');
+        if (/rate limit|too many/i.test(m)) return fail('Trop d’essais. Attendez quelques minutes.');
+        return fail('Échec : ' + m);
+      }
+      if (!res.data || !res.data.session) return fail('Le service demande une confirmation par e-mail. Désactivez « Confirm email » dans Supabase (voir LISEZMOI).');
+      return enter(res.data.session, authMode === 'signup');
+    }, function () { fail('Pas de connexion internet. Réessayez avec du réseau.'); }).then(function () { btn.disabled = false; });
+  }
+  function doLogout() {
+    var old = userId;
+    var p = sb ? sb.auth.signOut() : Promise.resolve();
+    return Promise.resolve(p).catch(function () { /* ignore */ }).then(function () {
+      try {
+        localStorage.removeItem(PREFIX + old);
+        localStorage.removeItem(PREFIX + old + ':meta');
+        localStorage.removeItem(lastKey());
+      } catch (e) { /* ignore */ }
+      session = null; state = emptyState(); meta = newMeta(); userId = 'local'; phone = ''; access = null; readOnly = false;
+      authMode = 'login';
+      closeSheet();
+      showAuth();
+    });
+  }
+
+  /* ---------- Actions ---------- */
+  function copyText(t) {
+    var p = (navigator.clipboard && navigator.clipboard.writeText) ? navigator.clipboard.writeText(t) : Promise.reject(new Error('no clipboard'));
+    return p.then(function () { return true; }, function () {
+      var ta = document.createElement('textarea');
+      ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      return ok;
+    });
+  }
+  function downloadFile(name, text) {
+    var blob = new Blob([text], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  function restoreFrom(text) {
+    var n = null;
+    try { n = normalizeState(JSON.parse(text), true); } catch (e) { n = null; }
+    if (!n) return false;
+    var snap = snapshot();
+    state = n; save(); tab = 'dettes'; render();
+    toast('Sauvegarde restaurée', function () { restoreSnapshot(snap); });
+    return true;
+  }
+  function act(name, el) {
+    var id = el.dataset.id;
+    var snap;
+    if (readOnly && WRITE_ACTS.indexOf(name) >= 0) { toast('Abonnement terminé : renouvelez pour modifier vos données.'); return; }
+    switch (name) {
+      case 'tab': tab = el.dataset.tab; render(); window.scrollTo(0, 0); break;
+      case 'auth-mode': setAuthMode(el.dataset.mode); break;
+      case 'new-credit': sheetNewCredit(); break;
+      case 'open-client': sheetClient(id); break;
+      case 'pay': sheetAmount('pay', id); break;
+      case 'add-credit': sheetAmount('credit', id); break;
+      case 'new-cash': sheetCash(); break;
+      case 'close': closeSheet(); break;
+      case 'fill-all': $('#f-amount').value = el.dataset.amount; $('#f-amount').focus(); break;
+      case 'copy-msg':
+        copyText(el.dataset.text).then(function (ok) { toast(ok ? 'Copié' : 'Copie impossible. Recopiez le texte à la main.'); });
+        break;
+      case 'del-tx':
+        snap = snapshot();
+        var tx = state.tx.filter(function (t) { return t.id === id; })[0];
+        state.tx = state.tx.filter(function (t) { return t.id !== id; });
+        save(); render();
+        if (tx) sheetClient(tx.clientId);
+        toast('Mouvement supprimé', function () { restoreSnapshot(snap); if (tx && sheetOpen()) sheetClient(tx.clientId); });
+        break;
+      case 'del-client':
+        snap = snapshot();
+        state.clients = state.clients.filter(function (c) { return c.id !== id; });
+        state.tx = state.tx.filter(function (t) { return t.clientId !== id; });
+        save(); closeSheet(); render();
+        toast('Client supprimé', function () { restoreSnapshot(snap); });
+        break;
+      case 'del-cash':
+        snap = snapshot();
+        state.cash = state.cash.filter(function (c) { return c.id !== id; });
+        save(); render();
+        toast('Ligne supprimée', function () { restoreSnapshot(snap); });
+        break;
+      case 'clear-examples':
+        snap = snapshot();
+        var exIds = {};
+        state.clients.forEach(function (c) { if (c.example) exIds[c.id] = true; });
+        state.clients = state.clients.filter(function (c) { return !c.example; });
+        state.tx = state.tx.filter(function (t) { return !exIds[t.clientId] && !t.example; });
+        state.cash = state.cash.filter(function (c) { return !c.example; });
+        save(); render();
+        toast('Exemples supprimés', function () { restoreSnapshot(snap); });
+        break;
+      case 'reset-ask': sheetResetConfirm(); break;
+      case 'reset-do':
+        snap = snapshot();
+        state = { clients: [], tx: [], cash: [], shop: state.shop };
+        save(); closeSheet(); render();
+        toast('Données effacées', function () { restoreSnapshot(snap); });
+        break;
+      case 'undo':
+        if (undoFn) { var f = undoFn; undoFn = null; $('#toast').hidden = true; f(); }
+        break;
+      case 'sync-now':
+        toast('Synchronisation…');
+        sync().then(function () { if (tab === 'reglages' && !sheetOpen()) renderView(); });
+        break;
+      case 'logout-ask':
+        if (pendingCount() > 0) sheetLogoutConfirm(); else doLogout();
+        break;
+      case 'logout-do': doLogout(); break;
+      case 'export-dl':
+        downloadFile('carnet-boutique-' + todayStr() + '.json', JSON.stringify(state, null, 2));
+        toast('Sauvegarde téléchargée');
+        break;
+      case 'export-copy':
+        var json = JSON.stringify(state);
+        copyText(json).then(function (ok) {
+          if (ok) { toast('Sauvegarde copiée. Collez-la dans un message à vous-même.'); return; }
+          var box = $('#pasteBox');
+          if (box) { box.value = json; box.focus(); box.select(); }
+          toast('Copiez le texte affiché dans la case.');
+        });
+        break;
+    }
+  }
+
+  document.addEventListener('click', function (e) {
+    if (e.target === $('#backdrop')) { closeSheet(); return; }
+    var el = e.target.closest('[data-act]');
+    if (el) act(el.dataset.act, el);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && sheetOpen()) closeSheet(); });
+  document.addEventListener('input', function (e) {
+    if (e.target.id === 'search') { query = e.target.value; renderList(); }
+    else if (e.target.id === 'shopName') {
+      if (readOnly) return;
+      state.shop = e.target.value.slice(0, 60); save();
+      $('#brandName').textContent = state.shop || 'Carnet Boutique';
+    }
+  });
+  document.addEventListener('change', function (e) {
+    if (e.target.id !== 'importFile' || !e.target.files || !e.target.files[0]) return;
+    if (readOnly) { toast('Abonnement terminé : renouvelez pour restaurer des données.'); return; }
+    var r = new FileReader();
+    r.onload = function () {
+      if (!restoreFrom(String(r.result))) toast('Ce fichier n’est pas une sauvegarde valide.');
+    };
+    r.readAsText(e.target.files[0]);
+    e.target.value = '';
+  });
+  document.addEventListener('submit', function (e) {
+    var f = e.target.closest('form[data-form]');
+    if (!f) return;
+    e.preventDefault();
+    var kind = f.dataset.form;
+    var fd = new FormData(f);
+    var err = f.querySelector('.error');
+    function fail(m) { if (err) { err.textContent = m; err.hidden = false; } }
+    if (kind === 'auth') { doAuth(f, fd, fail); return; }
+    if (readOnly) return fail('Abonnement terminé : renouvelez pour modifier vos données.');
+    var amount = parseAmount(fd.get('amount'));
+    var note = String(fd.get('note') || '').trim().slice(0, 120);
+    var id = f.dataset.id;
+
+    if (kind === 'new-credit') {
+      var name = String(fd.get('name') || '').trim();
+      if (!name) return fail('Écrivez le nom du client.');
+      if (amount <= 0) return fail('Entrez un montant supérieur à 0.');
+      var raw = String(fd.get('phone') || '').trim();
+      var ph = cleanPhone(raw);
+      if (raw && ph.length !== 8) return fail('Le numéro doit avoir 8 chiffres (exemple : 70 12 34 56).');
+      var c = state.clients.filter(function (x) { return x.name.toLowerCase() === name.toLowerCase(); })[0];
+      if (!c) { c = { id: newId(), name: name.slice(0, 80), phone: ph, example: false }; state.clients.push(c); }
+      else { adoptClient(c.id); if (!c.phone && ph) c.phone = ph; }
+      state.tx.push({ id: newId(), clientId: c.id, type: 'credit', amount: amount, note: note, date: nowIso(), example: false });
+      tab = 'dettes'; save(); closeSheet(); render();
+      toast('Crédit de ' + fmt(amount) + ' noté pour ' + c.name);
+    } else if (kind === 'payment' || kind === 'credit') {
+      if (!client(id)) return closeSheet();
+      if (amount <= 0) return fail('Entrez un montant supérieur à 0.');
+      var bal = balance(id);
+      if (kind === 'payment' && amount > bal) return fail('Ce paiement dépasse la dette (' + fmt(bal) + ').');
+      adoptClient(id);
+      state.tx.push({ id: newId(), clientId: id, type: kind === 'payment' ? 'paiement' : 'credit', amount: amount, note: note, date: nowIso(), example: false });
+      save(); closeSheet(); render();
+      var nb = balance(id);
+      toast(kind === 'credit' ? 'Crédit noté. Total dû : ' + fmt(nb) : (nb === 0 ? 'Dette soldée' : 'Paiement noté. Reste ' + fmt(nb)));
+    } else if (kind === 'cash') {
+      if (amount <= 0) return fail('Entrez un montant supérieur à 0.');
+      var type = fd.get('type') === 'depense' ? 'depense' : 'vente';
+      state.cash.push({ id: newId(), type: type, amount: amount, note: note, date: nowIso(), example: false });
+      tab = 'caisse'; save(); closeSheet(); render();
+      toast(type === 'vente' ? 'Vente notée' : 'Dépense notée');
+    } else if (kind === 'phone') {
+      var p2 = cleanPhone(fd.get('phone'));
+      if (p2.length !== 8) return fail('Le numéro doit avoir 8 chiffres (exemple : 70 12 34 56).');
+      var cl = client(id);
+      if (cl) { adoptClient(id); cl.phone = p2; save(); render(); sheetClient(id); }
+    } else if (kind === 'paste-restore') {
+      var text = String(fd.get('data') || '').trim();
+      if (!text) return fail('Collez d’abord le texte de la sauvegarde.');
+      if (!restoreFrom(text)) fail('Ce texte n’est pas une sauvegarde valide.');
+    }
+  });
+  window.addEventListener('online', function () { sync(); });
+  window.addEventListener('offline', function () { setSync(pendingCount() ? 'Hors ligne · ' + pendingCount() + ' à envoyer' : 'Hors ligne'); });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') sync(); });
+  setInterval(function () { if (document.visibilityState === 'visible') sync(); }, 60000);
+
+  /* ---------- Start ---------- */
+  function boot() {
+    if (!cloud) {
+      userId = 'local';
+      loadAll(true);
+      showApp();
+      render();
+      return Promise.resolve();
+    }
+    if (window.supabase && window.supabase.createClient) {
+      sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+    }
+    var lastRaw = null, last = null;
+    try { lastRaw = localStorage.getItem(lastKey()); last = lastRaw ? JSON.parse(lastRaw) : null; } catch (e) { last = null; }
+    var getS = sb ? sb.auth.getSession().then(function (r) { return r.data.session; }, function () { return null; }) : Promise.resolve(null);
+    return getS.then(function (sess) {
+      if (sess) return enter(sess, false);
+      if (last && last.uid && (navigator.onLine === false || !sb)) return enterOffline(last);
+      showAuth();
+    });
+  }
+  boot();
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () { /* ignore */ }); });
+  }
+})();
+</script>
+</body>
+</html>
